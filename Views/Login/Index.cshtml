@@ -1,0 +1,27 @@
+@{
+    ViewData["Title"] = "Iniciar sesión";
+}
+
+@model ProyectoFinal_ISII.ViewModels.LoginViewModel;
+
+@if(TempData.ContainsKey("ErrorMessage")) 
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="text-center">
+    <form asp-controller="Login" asp-action="Login" method="post" autocomplete="off">
+        <h1 class="display-4">@ViewData["Title"]</h1>
+        <label asp-for="@Model.NombreUsuario"></label>
+        <input asp-for="@Model.NombreUsuario" class="form-control"/>
+        <span asp-validation-for="@Model.NombreUsuario" class="text-danger"></span>  
+        <label asp-for="@Model.Password"></label>
+        <input asp-for="@Model.Password" class="form-control" type="password" />
+        <span asp-validation-for="@Model.Password" class="text-danger"></span>
+        <button type="submit" class="login-form-button">Iniciar sesión</button>
+    </form>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

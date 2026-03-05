@@ -1,0 +1,37 @@
+@{
+    ViewData["Title"] = "Usuarios registrados";
+}
+
+@model ProyectoFinal_ISII.ViewModels.ListarUsuariosViewModel;
+
+<div class="text-center visionOS-card">
+    <h1 class="display-4">@ViewData["Title"]</h1>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Usuario U in Model.Usuarios)
+                {
+                    <tr>
+                        <td>@U.Nombre</td>
+                        <td class="options-cell">
+                            <a class="modificar" asp-controller="Usuario" asp-action="Update" asp-route-id="@U.Id">Editar<i class="bi bi-pen"></i></a>
+                            <a class="eliminar" asp-controller="Usuario" asp-action="Delete" asp-route-id="@U.Id">Eliminar<i class="bi bi-x-circle-fill"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="d-grid gap-2">
+    <a asp-controller="Usuario" asp-action="Create"><button class="btn btn-primary boton" type="button">Añadir un nuevo usuario<i class="bi bi-plus-circle"></i></button></a>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

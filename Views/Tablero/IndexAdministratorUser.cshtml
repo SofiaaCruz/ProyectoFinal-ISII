@@ -1,0 +1,64 @@
+@using ProyectoFinal_ISII.ViewModels
+
+@{
+    ViewData["Title"] = "Tableros registrados";
+}
+
+@model ListarTablerosViewModel
+
+@if(TempData.ContainsKey("ErrorMessage")) 
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="text-center visionOS-card">
+    <h1 class="display-4">@ViewData["Title"]</h1>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Descripción</th>
+                    <th scope="col">Propietario</th>
+                    <th scope="col">Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(Tablero T in Model.Tableros)
+                {
+                    <tr>
+                        <td>@T.Nombre</td>
+                        <td class="description-cell">@T.Descripcion</td>
+                        @if(T.IdUsuarioPropietario != -9999)
+                        {
+                            foreach(Usuario user in Model.UsuariosRegistrados)
+                            {
+                                if(user.Id == T.IdUsuarioPropietario)
+                                {
+                                    <td>@user.Nombre</td>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <td>No tiene</td>
+                        }
+                        <td class="options-cell">
+                            <a class="modificar" asp-controller="Tablero" asp-action="Update" asp-route-idTablero="@T.Id" asp-route-idUsuario="@Model.IdUsuario">Editar<i class="bi bi-pen"></i></a>
+                            <a class="eliminar" asp-controller="Tablero" asp-action="Delete" asp-route-idTablero="@T.Id">Eliminar<i class="bi bi-x-circle-fill"></i></a>
+                            <a class="verTareas" asp-controller="Tarea" asp-action="ShowTasksOnBoard" asp-route-idTablero="@T.Id" asp-route-idUsuario="@Model.IdUsuario">Ver<i class="bi bi-caret-left-fill"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="d-grid gap-2">
+    <a asp-controller="Tablero" asp-action="Create" asp-route-idUsuario="@Model.IdUsuario"><button class="btn btn-primary boton" type="button">Añadir un nuevo tablero<i class="bi bi-plus-circle"></i></button></a>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

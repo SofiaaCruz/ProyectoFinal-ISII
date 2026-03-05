@@ -1,0 +1,46 @@
+@using ProyectoFinal_ISII.Models
+@using ProyectoFinal_ISII.ViewModels
+
+@{
+    ViewData["Title"] = "Crear tarea";
+}
+
+@model CrearTareaViewModel
+
+<div class="text-center">
+    <form asp-controller="Tarea" asp-action="Create" method="post" autocomplete="off">
+        <h1 class="display-4">@ViewData["Title"]</h1>
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Título</label>
+            <input asp-for="@Model.Nombre" type="text" class="form-control" id="nombre" required>
+            <span asp-validation-for="@Model.Nombre" class="text-danger"></span>  
+            <label for="descripcion" class="form-label">Descripción</label>
+            <input asp-for="@Model.Descripcion" type="text" class="form-control" id="descripcion" required>
+            <span asp-validation-for="@Model.Descripcion" class="text-danger"></span>  
+            <label for="color" class="form-label">Color</label>
+            <input asp-for="@Model.Color" type="color" class="form-control" id="color" required>
+            <span asp-validation-for="@Model.Color" class="text-danger"></span>  
+            <label for="usuarioAsignado" class="form-label">Seleccione el usuario al que desea asignar la tarea</label>
+            <select asp-for="@Model.IdUsuarioAsignado" class="form-control" id="usuarioAsignado" required>
+                @foreach (var user in @Model.UsuariosRegistrados)
+                {
+                    <option value="@user.Id">@user.Nombre</option>
+                }
+            </select>
+            <span asp-validation-for="@Model.IdUsuarioAsignado" class="text-danger"></span>  
+            <label for="tableroSeleccionado" class="form-label">Seleccione el tablero al que desea añadir la tarea</label>
+            <select asp-for="@Model.IdTablero" class="form-control" id="tableroSeleccionado" required>
+                @foreach (var board in @Model.TablerosRegistrados)
+                {
+                    <option value="@board.Id">@board.Nombre</option>
+                }
+            </select>
+            <span asp-validation-for="@Model.IdTablero" class="text-danger"></span>  
+            <input hidden asp-for="@Model.Estado" value=0>
+        </div>
+        <button type="submit" class="btn btn-primary">Crear</button>
+        <a asp-controller="Tarea" asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

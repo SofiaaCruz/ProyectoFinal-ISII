@@ -1,0 +1,87 @@
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccesor
+@{
+    var session = HttpContextAccesor.HttpContext.Session;
+}
+
+@using ProyectoFinal_ISII.ViewModels
+
+@model ListarTareasViewModel
+
+<div class="text-center visionOS-card">
+    <h1 class="display-4">Detalles de la tarea</h1>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col" class="description-cell">Descripción</th>
+                    <th scope="col">Usuario asignado</th>
+                    <th scope="col">Color</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">Tablero</th>
+                    <th scope="col">Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@Model.TareaSeleccionada.Nombre</td>
+                    <td class="description-cell">@Model.TareaSeleccionada.Descripcion</td>
+                    @if(Model.TareaSeleccionada.IdUsuarioAsignado != -9999)
+                    {
+                        foreach(Usuario user in Model.UsuariosRegistrados)
+                        {
+                            if(user.Id == Model.TareaSeleccionada.IdUsuarioAsignado)
+                            {
+                                <td>@user.Nombre</td>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <td>No tiene</td>
+                    } 
+                    <td class="color-cell" style="overflow: hidden;">
+                            <div style="background-color: @Model.TareaSeleccionada.Color; width: 30px; height: 30px; border-radius: 50%;"></div>
+                        </td>
+                    <td>@Model.TareaSeleccionada.Estado</td>
+                    @if(Model.TareaSeleccionada.IdTablero != -9999)
+                    {
+                        foreach(Tablero board in Model.TablerosRegistrados)
+                        {
+                            if(board.Id == Model.TareaSeleccionada.IdTablero)
+                            {
+                                <td>@board.Nombre</td>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <td>No tiene</td>
+                    } 
+
+                    @if(Model.TareaSeleccionada.IdUsuarioAsignado == Model.IdUsuario || session.GetString("rol") == "administrador" || Model.TareasCreadas != null && Model.TareasCreadas.Any(task => task.Id == Model.TareaSeleccionada.Id))
+                    {
+                        <td class="options-cell">
+                            <a class="modificar" asp-controller="Tarea" asp-action="Update" asp-route-idTarea="@Model.TareaSeleccionada.Id" asp-route-idUsuario="@Model.IdUsuario" asp-route-taskType=2>Editar<i class="bi bi-pen"></i></a>
+                            <a class="eliminar" asp-controller="Tarea" asp-action="Delete" asp-route-idTarea="@Model.TareaSeleccionada.Id">Eliminar<i class="bi bi-x-circle-fill"></i></a>
+                        </td>
+                    }
+                    else 
+                    {
+                        <td>No permitido</td>
+                    }
+
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="d-grid gap-2">
+    <a asp-controller="Tarea" asp-action="Create" asp-route-idUsuario="@Model.IdUsuario">
+        <button class="btn btn-primary boton" type="button">Añadir una nueva tarea<i class="bi bi-plus-circle"></i></button>
+    </a>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

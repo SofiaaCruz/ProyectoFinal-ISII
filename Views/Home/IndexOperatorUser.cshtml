@@ -1,0 +1,18 @@
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccesor
+@{
+    var session = HttpContextAccesor.HttpContext.Session;
+}
+
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="text-center visionOS-card">
+    <h1 class="display-4">Bienvenido, @session.GetString("nombreUsuario")</h1>
+    <h2>Estas son las opciones que tiene a su disposición:</h2>
+    <ul class="user-options-list list-group">
+        <li><a asp-controller="Tablero" asp-action="Index">Ver sus tableros, y aquellos en <br> los que tiene tareas asignadas<i class="bi bi-ui-checks-grid"></i></a></li>
+        <li><a asp-controller="Tarea" asp-action="Index">Ver sus tareas creadas, y aquellas <br> que le fueron asignadas<i class="bi bi-ui-checks"></i></a></li>
+    </ul>
+</div>

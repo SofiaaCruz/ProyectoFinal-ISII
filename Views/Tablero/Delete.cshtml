@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "Eliminar tablero";
+}
+
+@model Tablero
+
+<div class="text-center">
+    <form asp-controller="Tablero" asp-action="DeleteConfirmed" method="post">
+        <h1>@ViewData["Title"]</h1>
+        <h2>¿Desea confirmar la eliminación del tablero "@Model.Nombre"?</h2>
+        <div>
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+            <input hidden asp-for="@Model.Id">
+            <a asp-controller="Tablero" asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+    
+</div>

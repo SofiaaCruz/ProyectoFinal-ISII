@@ -1,0 +1,46 @@
+@using ProyectoFinal_ISII.ViewModels
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccesor
+@{
+    var session = HttpContextAccesor.HttpContext.Session;
+}
+
+@{
+    ViewData["Title"] = "Modificar tablero";
+}
+
+@model ModificarTableroViewModel
+
+<div class="text-center">
+    <form asp-controller="Tablero" asp-action="Update" method="post">
+        <h1 class="display-4">@ViewData["Title"]</h1>
+        <div class="mb-3">
+            <input hidden asp-for="@Model.Id">
+            @if(session.GetString("rol") == "administrador")
+            {
+                <label for="idUsuarioPropietario" class="form-label">Seleccione el usuario que será propietario de este tablero:</label>
+                <select asp-for="@Model.IdUsuarioPropietario" class="form-control" id="idUsuarioPropietario" required>
+                    @foreach (var user in @Model.UsuariosRegistrados)
+                    {
+                        <option value="@user.Id">@user.Nombre</option>
+                    }
+                </select>
+                <span asp-validation-for="@Model.IdUsuarioPropietario" class="text-danger"></span>  
+            }
+            else
+            {
+                <input hidden asp-for="@Model.IdUsuarioPropietario" value=@Model.IdUsuarioPropietario>
+            }
+            <label for="nombre" class="form-label">Nuevo nombre</label>
+            <input asp-for="@Model.Nombre" value="@Model.Nombre" type="text" class="form-control" id="nombre">
+            <span asp-validation-for="@Model.Nombre" class="text-danger"></span>  
+            <label for="descripcion" class="form-label">Nueva descripción</label>
+            <input asp-for="@Model.Descripcion" value="@Model.Descripcion" type="text" class="form-control" id="descripcion">
+            <span asp-validation-for="@Model.Descripcion" class="text-danger"></span>  
+        </div>
+        <button type="submit" class="btn btn-primary">Modificar</button>
+        <a asp-controller="Tablero" asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

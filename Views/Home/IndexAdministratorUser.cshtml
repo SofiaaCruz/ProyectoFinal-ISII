@@ -1,0 +1,27 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccesor
+@{
+    var session = HttpContextAccesor.HttpContext.Session;
+}
+
+@{
+    int idUsuario;
+    int.TryParse(session.GetString("id"), out idUsuario);
+}
+
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="text-center visionOS-card">
+    <h1 class="display-4">Bienvenido, @session.GetString("nombreUsuario")</h1>
+    <h2>Estas son las opciones que tiene a su disposición:</h2>
+    <ul class="user-options-list list-group">
+        <li><a asp-controller="Usuario" asp-action="Index">Ver todos los usuarios<i class="bi bi-people"></i></a></li>
+        <li><a asp-controller="Tablero" asp-action="Index">Ver todos los tableros<i class="bi bi-grid"></i></a></li>
+        <li><a asp-controller="Tarea" asp-action="Index">Ver todas las tareas<i class="bi bi-check-circle"></i></a></li>
+        <li><a asp-controller="Usuario" asp-action="Create">Crear un nuevo usuario<i class="bi bi-person-plus"></i></a></li>
+        <li><a asp-controller="Tablero" asp-action="Create" asp-route-idUsuario="@idUsuario">Crear un nuevo tablero<i class="bi bi-plus-square"></i></a></li>
+        <li><a asp-controller="Tarea" asp-action="Create" asp-route-idUsuario="@idUsuario">Crear una nueva tarea<i class="bi bi-plus-circle"></i></a></li>
+    </ul>
+</div>

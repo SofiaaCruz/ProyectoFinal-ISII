@@ -1,0 +1,65 @@
+@using ProyectoFinal_ISII.ViewModels
+
+@{
+    ViewData["Title"] = "Tareas";
+}
+
+@model ListarTareasViewModel
+
+<div class="text-center visionOS-card">
+    <h1 class="display-4">Tareas de este tablero</h1>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col" class="description-cell">Descripción</th>
+                    <th scope="col">Usuario asignado</th>
+                    <th scope="col">Color</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Tarea T in Model.Tareas)
+                {
+                    <tr>
+                        <td>@T.Nombre</td>
+                        <td class="description-cell">@T.Descripcion</td>
+                        @if(T.IdUsuarioAsignado != -9999)
+                        {
+                            foreach(Usuario user in Model.UsuariosRegistrados)
+                            {
+                                if(user.Id == T.IdUsuarioAsignado)
+                                {
+                                    <td>@user.Nombre</td>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <td>No tiene</td>
+                        } 
+                        <td class="color-cell" style="overflow: hidden;">
+                            <div style="background-color: @T.Color; width: 30px; height: 30px; border-radius: 50%;"></div>
+                        </td>
+                        <td>@T.Estado</td>
+                        <td class="options-cell">
+                            <a class="modificar" asp-controller="Tarea" asp-action="Update" asp-route-idTarea="@T.Id" asp-route-idUsuario="@Model.IdUsuario">Editar<i class="bi bi-pen"></i></a>
+                            <a class="eliminar" asp-controller="Tarea" asp-action="Delete" asp-route-idTarea="@T.Id">Eliminar<i class="bi bi-x-circle-fill"></i></a>
+                            <a class="ver" asp-controller="Tarea" asp-action="ShowSingleTask" asp-route-idTarea="@T.Id" asp-route-idUsuario="@Model.IdUsuario">Detalles<i class="bi bi-caret-left-fill"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="d-grid gap-2">
+    <a asp-controller="Tarea" asp-action="Create" asp-route-idUsuario="@Model.IdUsuario" asp-route-idTablero="@Model.IdTablero">
+        <button class="btn btn-primary boton" type="button">Añadir una nueva tarea<i class="bi bi-plus-circle"></i></button>
+    </a>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
