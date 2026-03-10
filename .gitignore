@@ -488,9 +488,6 @@ obj/
 # Configuración de Visual Studio Code
 .vscode/
 
-# Bases de datos locales
-*.db
-DB/
-
 # Archivos de configuración de usuario
 appsettings.Development.json
+
