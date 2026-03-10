@@ -15,8 +15,7 @@ Para reproducir la experiencia técnica y validar el sistema en un entorno contr
 ### 2.2. Construcción de la Imagen (Identificación de SCM)
 Este comando identifica y empaqueta todos los elementos de configuración (código, dependencias y entorno) en una imagen única:
 ```sh
-docker build -t kanban-isii .
-
+docker build -t mi-proyecto .
 ```
 
 ### 2.3. Ejecución del Contenedor
@@ -24,8 +23,7 @@ docker build -t kanban-isii .
 Despliegue la aplicación mapeando los puertos para la comunicación externa:
 
 ```sh
-docker run -d -p 8080:8080 --name mi-kanban kanban-isii
-
+docker run -d -p 8080:8080 --name mi-kanban mi-proyecto
 ```
 
 * **Nota técnica:** El puerto **8080** es el configurado para el servidor Kestrel en este entorno de producción.
@@ -34,10 +32,13 @@ docker run -d -p 8080:8080 --name mi-kanban kanban-isii
 
 Si recibe un error indicando que el nombre `/mi-kanban` ya está en uso, debe liberar el elemento de configuración previo:
 
+* #### Detener el proceso
 ```sh
 docker stop mi-kanban
+```
+* #### Eliminar el elemento de configuración anterior para liberar el nombre
+```sh
 docker rm mi-kanban
-
 ```
 
 Luego, repita el comando `docker run`.

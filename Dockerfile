@@ -1,20 +1,25 @@
-# Use the official .NET SDK image for building the application
+#multi-etapas
+# --- ETAPA 1: COMPILACIÓN (SDK) --- 
+# Esta es la parte "pesada" que tiene los compiladores
+# Usar la imagen oficial del SDK de .NET para construir la aplicación
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
 
-# Copy the project files and restore dependencies
+# copiar los archivos del proyecto y restaurar las dependencias 
 COPY *.csproj ./
 RUN dotnet restore
 
-# Copy remaining files and build the application
+# Copiar los archivos restantes y compilar la aplicacion
 COPY . ./
 RUN dotnet publish -c Release -o out
 
-# Use the runtime image to run the application
+# --- ETAPA 2: EJECUCIÓN (RUNTIME) --- 
+# Esta es la parte "liviana" para que la app corra rápido y segura
+# Usar la imagen de runtime para ejecutar la aplicación 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/out ./
 
-# Expose the port and define the entry point
+# Exponer el puerto y definir el punto de entrada
 EXPOSE 80
 ENTRYPOINT ["dotnet", "ProyectoFinal-ISII.dll"]
