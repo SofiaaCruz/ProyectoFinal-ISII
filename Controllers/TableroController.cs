@@ -21,10 +21,7 @@ public class TableroController : Controller
         tareaRepository = _tareaRepository;
     }
 
-    // Endpoints
-
     // Mostrar tableros
-
     public IActionResult Index() 
     {
         try
@@ -32,6 +29,8 @@ public class TableroController : Controller
             if(notLoggedUser()) return redirectToLogin();
 
             int idUsuario = int.Parse(HttpContext.Session.GetString("id"));
+
+            _logger.LogInformation($"Usuario {idUsuario} accedió a la lista de tableros.");
 
             List<Tarea> tareas = new();
             List<Tablero> tablerosPropios = new();
@@ -41,6 +40,9 @@ public class TableroController : Controller
             if(isAdmin())
             {
                 tablerosPropios = tableroRepository.GetAll();
+
+                _logger.LogInformation("Administrador visualizó todos los tableros.");
+
                 return View("IndexAdministratorUser", new ListarTablerosViewModel(tablerosPropios, idUsuario, usuariosRegistrados));
             }
             else
@@ -55,21 +57,24 @@ public class TableroController : Controller
                     tablerosConTareasAsignadas.Add(tableroBuscado);
                 }
 
-                
-                tablerosConTareasAsignadas = tablerosConTareasAsignadas.GroupBy(tablero => tablero.Id).Select(group => group.First()).ToList();
+                tablerosConTareasAsignadas = tablerosConTareasAsignadas
+                    .GroupBy(tablero => tablero.Id)
+                    .Select(group => group.First())
+                    .ToList();
+
+                _logger.LogInformation($"Usuario {idUsuario} visualizó sus tableros.");
 
                 return View("IndexOperatorUser", new ListarTablerosViewModel(tablerosPropios, tablerosConTareasAsignadas, idUsuario, usuariosRegistrados));
             }
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al mostrar los tableros");
             return BadRequest();
         }
     }
 
     // Crear tablero
-
     public IActionResult Create(int idUsuario) 
     {
         try
@@ -78,11 +83,13 @@ public class TableroController : Controller
 
             List<Usuario> usuarios = usuarioRepository.GetAll();
 
+            _logger.LogInformation($"Usuario {idUsuario} accedió a la pantalla de creación de tableros.");
+
             return View(new CrearTableroViewModel(idUsuario, usuarios));
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al cargar la vista de creación de tablero");
             return BadRequest();
         }
     }
@@ -93,32 +100,38 @@ public class TableroController : Controller
         try
         {
             if(!ModelState.IsValid) return RedirectToAction("Index");
+
             var tablero = new Tablero(tableroVM);
             tableroRepository.Create(tablero);
+
+            _logger.LogInformation($"Se creó el tablero '{tablero.Nombre}' por el usuario {tablero.IdUsuarioPropietario}");
+
             return RedirectToAction("Index");
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al crear un tablero");
             return BadRequest();
         }
     }
 
     // Modificar tablero
-
     public IActionResult Update(int idTablero, int idUsuario) 
     {
         try
         {
             if(notLoggedUser()) return redirectToLogin();
+
             var tablero = tableroRepository.GetById(idTablero);
             var usuarios = usuarioRepository.GetAll();
+
+            _logger.LogInformation($"Usuario {idUsuario} accedió a la modificación del tablero {idTablero}");
 
             return View(new ModificarTableroViewModel(tablero, idUsuario, usuarios));
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al cargar la vista de modificación de tablero");
             return BadRequest();
         }
     }
@@ -129,30 +142,35 @@ public class TableroController : Controller
         try
         {
             if(!ModelState.IsValid) return RedirectToAction("Index");
+
             var tablero = new Tablero(tableroVM);
             tableroRepository.Update(tablero.Id, tablero);
+
+            _logger.LogInformation($"Se modificó el tablero ID {tablero.Id}");
+
             return RedirectToAction("Index");
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al modificar un tablero");
             return BadRequest();
         }
     }
 
-    
     // Eliminar tablero
-
     public IActionResult Delete(int idTablero) 
     {
         try
         {
             if(notLoggedUser()) return redirectToLogin();
+
+            _logger.LogInformation($"Se accedió a la pantalla de eliminación del tablero {idTablero}");
+
             return View(tableroRepository.GetById(idTablero));
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al cargar la vista de eliminación");
             return BadRequest();
         }
     }
@@ -164,43 +182,39 @@ public class TableroController : Controller
         {
             if(tableroRepository.Delete(id) > 0)
             {
+                _logger.LogInformation($"Se eliminó el tablero con ID {id}");
                 return RedirectToAction("Index");
             }
             else 
             {
+                _logger.LogWarning($"Intento fallido de eliminar el tablero ID {id}");
                 return RedirectToAction("Error");
             }
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al eliminar tablero");
             return BadRequest();
         }
     }
 
-    // Método que verifica que haya una sesión existente 
-
     private bool notLoggedUser()
     {
-        return (HttpContext.Session.GetString("rol") != "administrador" && HttpContext.Session.GetString("rol") != "operador");
+        return (HttpContext.Session.GetString("rol") != "administrador" &&
+                HttpContext.Session.GetString("rol") != "operador");
     }
-
-    // Método que verifica que el usuario logueado sea 'administrador'
 
     private bool isAdmin()
     {
-        return (HttpContext.Session != null && HttpContext.Session.GetString("rol") == "administrador");
+        return (HttpContext.Session != null &&
+                HttpContext.Session.GetString("rol") == "administrador");
     }
-
-    // Método que redirecciona a la pantalla de inicio mostrando un mensaje de error correspondiente
 
     private IActionResult redirectOperatorUser()
     {
-        TempData["ErrorMessage"] = "No puedes acceder a este sitio porque no eres administrador";        // Almacena el mensaje en TempData (se utiliza para pasar datos entre acciones durante redirecciones) para mostrarlo en la página de inicio
+        TempData["ErrorMessage"] = "No puedes acceder a este sitio porque no eres administrador";
         return RedirectToRoute(new { controller = "Tablero", action = "Index" });
     }
-
-    // Método que redirecciona a la pantalla de inicio de sesión
 
     private IActionResult redirectToLogin()
     {

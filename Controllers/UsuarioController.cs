@@ -17,21 +17,15 @@ public class UsuarioController : Controller
         usuarioRepository = _usuarioRepository;
     }
 
-    // Endpoints
-
-    // Página principal - muestra todos los usuarios en una tabla
-
+    // Página principal - lista de usuarios
     public IActionResult Index()
     {   
         try
         {
-            // Se verifica que el usuario esté logueado correctamente
-
             if(notLoggedUser()) return redirectToLogin();
-
-            // El acceso a todos los usuarios esta permitido sólo para el usuario 'administrador'
-
             if(!isAdmin()) return redirectOperatorUser();
+
+            _logger.LogInformation("Administrador accedió a la lista de usuarios.");
 
             var users = usuarioRepository.GetAll();
             var usersVM = new ListarUsuariosViewModel(users);
@@ -40,58 +34,72 @@ public class UsuarioController : Controller
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al mostrar la lista de usuarios");
             return BadRequest();
         }
     }
 
-    // Creación de usuario. Recibe los datos de un usuario desde un formulario y los carga en la BD
-
-    // Para obtener la vista (No es necesario escribir [HttpGet], pues se asume que ese es el verbo por defecto)
-
+    // Vista para crear usuario
     public IActionResult Create()
     {
         try
         {
             if(notLoggedUser()) return redirectToLogin();
             if(!isAdmin()) return redirectOperatorUser();
+
+            _logger.LogInformation("Administrador accedió a la pantalla de creación de usuario.");
+
             return View(new CrearUsuarioViewModel());
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al cargar la vista de creación de usuario");
             return BadRequest();
         }
     }
 
-    [HttpPost]      // Para añadir el usuario en la BD
-    public IActionResult Create(CrearUsuarioViewModel usuarioVM)        // Recibe el objeto view model desde el formulario
+    [HttpPost]
+    public IActionResult Create(CrearUsuarioViewModel usuarioVM)
     {
         try
         {
-            if(!ModelState.IsValid) return RedirectToAction("Index");   // Si el modelo no está en su estado válido, se redirecciona a la página de inicio (verifica que no haya errores de validación)   
-            if(!isAdmin()) return redirectOperatorUser();  // Si el usuario no es administrador, es redirigido a la página de inicio       
+            _logger.LogInformation("Intento de crear usuario");
+
+            if(!ModelState.IsValid)
+            {
+                _logger.LogWarning("Modelo inválido al intentar crear usuario");
+                return RedirectToAction("Index");
+            }
+
+            if(!isAdmin())
+            {
+                _logger.LogWarning("Usuario no autorizado intentó crear usuario");
+                return redirectOperatorUser();
+            }
 
             var usuario = new Usuario(usuarioVM);
             usuarioRepository.Create(usuario);
-            
+
+            _logger.LogInformation($"Se creó el usuario '{usuario.Nombre}' con rol {usuario.Rol}");
+
             return RedirectToAction("Index");
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al crear usuario");
             return BadRequest();
-        }
     }
+}
 
-    // Modificación de un usuario
-
+    // Modificar usuario
     public IActionResult Update(int id)
     {
         try
         {
             if(notLoggedUser()) return redirectToLogin();
             if(!isAdmin()) return redirectOperatorUser();
+
+            _logger.LogInformation($"Administrador accedió a modificar el usuario ID {id}");
 
             var usuario = usuarioRepository.GetById(id);
             var usuarioVM = new ModificarUsuarioViewModel(usuario);
@@ -100,7 +108,7 @@ public class UsuarioController : Controller
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al cargar modificación de usuario");
             return BadRequest();
         }
     }
@@ -116,28 +124,32 @@ public class UsuarioController : Controller
             var usuario = new Usuario(usuarioVM);
             usuarioRepository.Update(id, usuario);
 
+            _logger.LogInformation($"Se modificó el usuario con ID {id}");
+
             return RedirectToAction("Index");
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al modificar usuario");
             return BadRequest();
         }
     }
 
-    // Eliminación de un usuario
-
+    // Eliminar usuario
     public IActionResult Delete(int id) 
     {
         try
         {
             if(notLoggedUser()) return redirectToLogin();
             if(!isAdmin()) return redirectOperatorUser();
+
+            _logger.LogInformation($"Administrador accedió a eliminar el usuario ID {id}");
+
             return View(usuarioRepository.GetById(id));
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al cargar eliminación de usuario");
             return BadRequest();
         }
     }
@@ -149,46 +161,46 @@ public class UsuarioController : Controller
         {
             if(usuarioRepository.Delete(id) > 0)      
             {
+                _logger.LogInformation($"Se eliminó el usuario con ID {id}");
                 return RedirectToAction("Index");
             }
             else
             {
+                _logger.LogWarning($"Intento fallido de eliminar usuario ID {id}");
                 return RedirectToAction("Error");
             }
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Error al eliminar usuario");
             return BadRequest();
         }
     }
 
-    // Método que verifica que haya una sesión existente 
-
     private bool notLoggedUser()
     {
-        return (HttpContext.Session.GetString("rol") != "administrador" && HttpContext.Session.GetString("rol") != "operador");
+        return (HttpContext.Session.GetString("rol") != "administrador" &&
+                HttpContext.Session.GetString("rol") != "operador");
     }
-
-    // Método que verifica que el usuario logueado sea 'administrador'
 
     private bool isAdmin()
     {
-        return (HttpContext.Session != null && HttpContext.Session.GetString("rol") == "administrador");
+        return (HttpContext.Session != null &&
+                HttpContext.Session.GetString("rol") == "administrador");
     }
-
-    // Método que redirecciona a la pantalla de inicio mostrando un mensaje de error correspondiente
 
     private IActionResult redirectOperatorUser()
     {
-        TempData["ErrorMessage"] = "No puedes acceder a este sitio porque no eres administrador";        // Almacena el mensaje en TempData (se utiliza para pasar datos entre acciones durante redirecciones) para mostrarlo en la página de inicio
+        _logger.LogWarning("Intento de acceso a sección de usuarios por un operador.");
+
+        TempData["ErrorMessage"] = "No puedes acceder a este sitio porque no eres administrador";
         return RedirectToRoute(new { controller = "Tablero", action = "Index" });
     }
 
-    // Método que redirecciona a la pantalla de inicio de sesión
-
     private IActionResult redirectToLogin()
     {
+        _logger.LogWarning("Intento de acceso sin sesión iniciada.");
+
         TempData["ErrorMessage"] = "Inicie sesión antes de acceder a este sitio";
         return RedirectToRoute(new { controller = "Login", action = "Index" });
     }
@@ -196,6 +208,7 @@ public class UsuarioController : Controller
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
+        _logger.LogError("Se accedió a la página de error.");
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }

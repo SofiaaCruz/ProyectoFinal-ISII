@@ -18,57 +18,51 @@ public class LoginController : Controller
         usuarioRepository = _usuarioRepository;
     }
 
-    // Endpoints
-
+    // Endpoint de vista de login
     public IActionResult Index()
     {
+        _logger.LogInformation("Acceso a la página de login");
         return View();
     }
 
     // Endpoint de control de inicio de sesión
-
     [HttpPost]     
     public IActionResult Login(LoginViewModel usuario)
     {
         try 
         {
+            _logger.LogInformation($"Intento de inicio de sesión del usuario: {usuario.NombreUsuario}");
+
             var usuarioLogueado = usuarioRepository.GetLoggedUser(usuario.NombreUsuario.Trim(), usuario.Password);
 
             if(usuarioLogueado.Nombre == null) 
             {
                 // Acceso rechazado
-                _logger.LogWarning($"Intento de acceso inválido - Usuario: {usuario.NombreUsuario.Trim()} - Clave ingresada: {usuario.Password}");
+                _logger.LogWarning($"Intento de acceso inválido - Usuario: {usuario.NombreUsuario.Trim()}");
 
                 TempData["ErrorMessage"] = "Ha ingresado credenciales incorrectas, o el usuario no existe";
-                return RedirectToAction("Index");       // Si el usuario no existe, retorna a 'Index'
+                return RedirectToAction("Index");
             }
             else 
             {
                 // Acceso exitoso
                 _logger.LogInformation($"El usuario {usuario.NombreUsuario.Trim()} ingresó correctamente.");
 
-                LoguearUsuario(usuarioLogueado);        // Registrar el usuario
+                LoguearUsuario(usuarioLogueado);
 
-                if (HttpContext.Session.GetString("rol") == Rol.administrador.ToString())
-                {
-                    return RedirectToRoute(new { controller = "Home", action = "Index" });
-                }
-                else
-                {
-                    return RedirectToRoute(new { controller = "Home", action = "Index" });
-                }
+                return RedirectToRoute(new { controller = "Home", action = "Index" });
             }
         }
         catch (Exception ex)
         {
-            // Loggeo de errores
-            _logger.LogError($"Error durante el inicio de sesión: {ex.ToString()}");
+            _logger.LogError(ex, "Error durante el inicio de sesión");
             return BadRequest();
         }
     }
 
     public IActionResult Logout() 
     {
+        _logger.LogInformation("Usuario accedió a la página de cierre de sesión");
         return View();
     }
 
@@ -77,20 +71,22 @@ public class LoginController : Controller
     {
         try
         {
-            HttpContext.Session.Clear();    // Elimina todas las variables de sesión al cerrar sesión
+            HttpContext.Session.Clear();
+
             _logger.LogInformation("Usuario cerró sesión correctamente.");
-            return RedirectToAction("Index", "Login");      // Redirige a la página de inicio de sesión
+
+            return RedirectToAction("Index", "Login");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error durante el cierre de sesión: {ex.ToString()}");
+            _logger.LogError(ex, "Error durante el cierre de sesión");
             return BadRequest();
         }
     }
 
     private void LoguearUsuario(Usuario usuario)
     {
-        HttpContext.Session.SetString("id", usuario.Id.ToString());         // Establece una variable de sesión, "id", con el valor 'usuario.Id'
+        HttpContext.Session.SetString("id", usuario.Id.ToString());
         HttpContext.Session.SetString("nombreUsuario", usuario.Nombre);
         HttpContext.Session.SetString("rol", usuario.Rol.ToString());
         HttpContext.Session.SetString("password", usuario.Password);
