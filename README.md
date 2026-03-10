@@ -10,7 +10,6 @@ Para reproducir la experiencia técnica y validar el sistema en un entorno contr
 
 ### 2.1. Requisitos
 - [Docker Desktop](https://www.docker.com/)
-- [Microsoft .NET SDK 10.0](https://dotnet.microsoft.com/download)
 
 ### 2.2. Construcción de la Imagen (Identificación de SCM)
 Este comando identifica y empaqueta todos los elementos de configuración (código, dependencias y entorno) en una imagen única:
