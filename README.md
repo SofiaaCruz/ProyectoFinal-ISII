@@ -53,8 +53,14 @@ Nota: El puerto 8080 permite la comunicación entre su máquina host y el servid
 
 Para auditar el estado del software en ejecución y visualizar eventos del sistema (como el login de usuarios):
 
-* **Estado del proceso**: `docker ps`
-* **Logs en tiempo real**: `docker logs -f mi-kanban`
+* **Estado del proceso**: 
+``` sh
+docker ps
+```
+* **Logs en tiempo real**: 
+```sh
+docker logs -f mi-kanban
+```
 
 ## 4. Atributos de Calidad Implementados
 
